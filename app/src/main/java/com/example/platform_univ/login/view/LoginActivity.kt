@@ -1,21 +1,23 @@
 package com.example.platform_univ.login.view
 
 import android.content.Intent
-import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Observer
+import androidx.lifecycle.ViewModelProviders
 import com.example.platform_univ.R
-import com.example.platform_univ.login.mvp.LoginMVP
-import com.example.platform_univ.login.presenter.LoginPresenter
+import com.example.platform_univ.login.ViewModel.LoginViewModel
+import com.google.android.gms.tasks.Task
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.AuthResult
 import kotlinx.android.synthetic.main.activity_main.*
 
-class LoginActivity : AppCompatActivity(), LoginMVP.View {
+class LoginActivity : AppCompatActivity(){
 
     private lateinit var contEdtUser   : TextInputLayout
     private lateinit var contEdtPass   : TextInputLayout
@@ -23,7 +25,10 @@ class LoginActivity : AppCompatActivity(), LoginMVP.View {
     private lateinit var edtPass       : TextInputEditText
     private lateinit var btnLogin      : Button
     private lateinit var lblCreateUser : TextView
-    private lateinit var presenter     : LoginPresenter
+    private lateinit var presenter     : LoginViewModel
+
+    private val viewModel by lazy{ ViewModelProviders.of(this).get(LoginViewModel::class.java)}
+    private val TAG = this::class.java.name
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -36,10 +41,28 @@ class LoginActivity : AppCompatActivity(), LoginMVP.View {
         btnLogin      = btn_login
         lblCreateUser = lbl_create_user
 
-        presenter = LoginPresenter(this)
-
         btnLogin.setOnClickListener {
-            presenter.logIn(edtUser.text?.trim().toString(), edtPass.text?.trim().toString())
+            val user    = edtUser.text?.trim().toString()
+            val password= edtPass.text?.trim().toString()
+            if (user.isEmpty()){
+                showToask("Ingresa un usuario.")
+                return@setOnClickListener
+            }
+
+            if (password.isEmpty()){
+                showToask("Ingresa una contraseña.")
+                return@setOnClickListener
+            }
+
+            showProgres()
+            viewModel.logIn(user, password)
+                ?.observe(this, Observer<Task<AuthResult>> {
+                    Log.e(TAG,"result View  ${it.isSuccessful}")
+                    if(it.isSuccessful) logInSuccess()
+                    else logInError()
+                    hideProgres()
+                }
+                )
         }
 
         lblCreateUser.setOnClickListener {
@@ -48,23 +71,29 @@ class LoginActivity : AppCompatActivity(), LoginMVP.View {
         }
     }
 
-    override fun showProgres() {}
 
-    override fun hideProgres() {}
+    fun showProgres() {
+//        Log.e(TAG,"cargando")
+    }
 
-    override fun showToask(message: String) {
+    fun hideProgres() {
+//        Log.e(TAG,"termine")
+    }
+
+    fun showToask(message: String) {
         Toast.makeText(this, message, Toast.LENGTH_SHORT).show()}
 
-    override fun logInSuccess() {
+    fun logInSuccess() {
         val intent = Intent(this,  PerfilActivity::class.java)
         startActivity(intent)
     }
 
-    override fun logInError() {
+    fun logInError() {
         edtUser.setText("")
         edtPass.setText("")
         edtUser.clearFocus()
         edtPass.clearFocus()
+        showToask("Usuarion o contraseña incorrecta.")
     }
 
     override fun onDestroy() {

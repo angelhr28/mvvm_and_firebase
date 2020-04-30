@@ -3,12 +3,9 @@ package com.example.platform_univ.login.view
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
 import android.widget.Button
-import android.widget.TextView
 import com.example.platform_univ.R
-import com.example.platform_univ.login.presenter.LoginPresenter
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
-import com.google.firebase.auth.FirebaseAuth
 import kotlinx.android.synthetic.main.activity_register_user.*
 
 class RegisterUserActivity : AppCompatActivity() {
