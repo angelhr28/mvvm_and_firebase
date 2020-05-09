@@ -39,7 +39,8 @@
             android:maxLength="30"
             android:textSize="17dp"
             android:paddingBottom="16dp"
-            android:gravity="center_vertical"/>
+            android:gravity="center_vertical"
+            />
 
     </com.google.android.material.textfield.TextInputLayout>
 
